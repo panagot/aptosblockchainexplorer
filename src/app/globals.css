@@ -396,3 +396,79 @@ html.dark [class*="text-gray"],
 html.dark [class*="text-zinc"] {
   color: #f8fafc !important;
 }
+
+/* Fix specific Tailwind color classes that are causing issues */
+html.dark .text-blue-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-blue-200 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-600 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-400 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-300 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-purple-900 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-purple-100 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-purple-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-purple-200 {
+  color: #f8fafc !important;
+}
+
+/* Fix background gradients that might be causing issues */
+html.dark .from-blue-50\/80,
+html.dark .to-indigo-50\/80 {
+  background: rgba(30, 41, 59, 0.8) !important;
+}
+
+html.dark .from-blue-50\/80 *,
+html.dark .to-indigo-50\/80 * {
+  color: #f8fafc !important;
+}
+
+/* Fix footer specific classes */
+html.dark .text-slate-500 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-600 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-400 {
+  color: #f8fafc !important;
+}
+
+/* Fix footer background */
+html.dark .from-slate-50,
+html.dark .to-blue-50 {
+  background: rgba(15, 23, 42, 0.9) !important;
+}
+
+html.dark .from-slate-900,
+html.dark .to-slate-800 {
+  background: rgba(15, 23, 42, 0.9) !important;
+}
