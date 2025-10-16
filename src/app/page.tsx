@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Search, Loader2, Moon, Sun, History, TrendingUp, Copy, Download, Share2, ExternalLink, XCircle } from 'lucide-react';
 import { fetchTransactionDetails, fetchRecentTransactions } from '@/lib/aptosClient';
 import { parseAptosTransaction } from '@/lib/transactionParser';
@@ -202,8 +203,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">A</span>
+              <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
+        <Image
+                  src="/aptos-logo.svg"
+                  alt="Aptos Logo"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
