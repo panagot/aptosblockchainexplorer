@@ -8,6 +8,10 @@ import { parseAptosTransaction } from '@/lib/transactionParser';
 import type { AptosTransactionExplanation } from '@/types/transaction';
 import BalanceChanges from '@/components/BalanceChanges';
 import EducationalContent from '@/components/EducationalContent';
+import NetworkStats from '@/components/NetworkStats';
+import TransactionFlow from '@/components/TransactionFlow';
+import MEVDetection from '@/components/MEVDetection';
+import RealTimeMonitor from '@/components/RealTimeMonitor';
 
 export default function Home() {
   const [hash, setHash] = useState('');
@@ -16,6 +20,7 @@ export default function Home() {
   const [transaction, setTransaction] = useState<AptosTransactionExplanation | null>(null);
   const [history, setHistory] = useState<AptosTransactionExplanation[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -263,6 +268,17 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => {
+                  console.log('Dashboard button clicked');
+                  setShowDashboard(!showDashboard);
+                }}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                title="Network Dashboard"
+              >
+                <TrendingUp className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+              
+              <button
+                onClick={() => {
                   console.log('History button clicked');
                   setShowHistory(!showHistory);
                 }}
@@ -332,6 +348,30 @@ export default function Home() {
                 No transaction history yet. Analyze some transactions to build your history!
               </p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Dashboard Panel */}
+      {showDashboard && (
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Aptos Network Dashboard
+              </h3>
+              <button
+                onClick={() => setShowDashboard(false)}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <NetworkStats />
+              <RealTimeMonitor />
+            </div>
           </div>
         </div>
       )}
@@ -847,6 +887,12 @@ export default function Home() {
               <BalanceChanges balanceChanges={transaction.balanceChanges} />
             )}
 
+            {/* Transaction Flow Visualization */}
+            <TransactionFlow transaction={transaction} />
+
+            {/* MEV Detection */}
+            <MEVDetection transaction={transaction} />
+
             {/* Educational Content */}
             {transaction.educationalContent && transaction.educationalContent.length > 0 && (
               <EducationalContent educationalContent={transaction.educationalContent} />
@@ -870,19 +916,51 @@ export default function Home() {
 
       </div>
 
-      {/* Compact Footer - Fixed to Bottom */}
+      {/* Professional Footer */}
       <footer className="mt-auto bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 border-t border-slate-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="text-center">
-            <p className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-2">
-              Made with ❤️ for the Aptos community
-            </p>
-            <div className="flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-500">
-              <span>Open source</span>
-              <span>•</span>
-              <span>No registration required</span>
-              <span>•</span>
-              <span>Professional transaction analysis</span>
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div>
+              <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Features</h4>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li>• Real-time transaction monitoring</li>
+                <li>• MEV detection & analysis</li>
+                <li>• Educational content & explanations</li>
+                <li>• Balance change tracking</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Technology</h4>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li>• Built with Next.js & TypeScript</li>
+                <li>• Aptos SDK integration</li>
+                <li>• Move language support</li>
+                <li>• Parallel execution analysis</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Community</h4>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li>• Open source project</li>
+                <li>• No registration required</li>
+                <li>• Professional analysis tools</li>
+                <li>• Built for Aptos ecosystem</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+            <div className="text-center">
+              <p className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-2">
+                Made with ❤️ for the Aptos community
+              </p>
+              <div className="flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-500">
+                <span>© 2024 Aptos Explorer</span>
+                <span>•</span>
+                <span>Grant Submission</span>
+                <span>•</span>
+                <span>Easy to Read Blockchain Explorer</span>
+              </div>
             </div>
           </div>
         </div>
