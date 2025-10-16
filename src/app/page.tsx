@@ -35,6 +35,9 @@ export default function Home() {
       if (savedDarkMode === 'true') {
         setDarkMode(true);
         document.documentElement.classList.add('dark');
+      } else {
+        setDarkMode(false);
+        document.documentElement.classList.remove('dark');
       }
     }
   }, []);
@@ -82,9 +85,40 @@ export default function Home() {
 
   const loadRecentTransactions = async () => {
     try {
-      await fetchRecentTransactions(10);
+      const recentTxs = await fetchRecentTransactions(10);
+      if (recentTxs && recentTxs.length > 0) {
+        // Pick a random transaction from the recent ones
+        const randomTxHash = recentTxs[Math.floor(Math.random() * recentTxs.length)];
+        setHash(randomTxHash);
+        // Trigger the search
+        setLoading(true);
+        setError('');
+        setTransaction(null);
+        
+        try {
+          const txData = await fetchTransactionDetails(randomTxHash);
+          const parsedTx = parseAptosTransaction(txData);
+          
+          setTransaction(parsedTx);
+          
+          // Add to history
+          const newHistory = [parsedTx, ...history.slice(0, 9)];
+          setHistory(newHistory);
+          
+          // Save to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('aptos-tx-history', JSON.stringify(newHistory));
+          }
+        } catch (searchErr) {
+          setError('Failed to load transaction details');
+          console.error('Search error:', searchErr);
+        } finally {
+          setLoading(false);
+        }
+      }
     } catch (err) {
       console.error('Failed to load recent transactions:', err);
+      setError('Failed to load recent transactions');
     }
   };
 
@@ -224,7 +258,10 @@ export default function Home() {
             
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setShowHistory(!showHistory)}
+                onClick={() => {
+                  console.log('History button clicked');
+                  setShowHistory(!showHistory);
+                }}
                 className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 title="Transaction History"
               >
@@ -232,7 +269,10 @@ export default function Home() {
               </button>
               
               <button
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={() => {
+                  console.log('Dark mode button clicked, current state:', darkMode);
+                  setDarkMode(!darkMode);
+                }}
                 className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 title="Toggle Dark Mode"
               >
@@ -332,7 +372,10 @@ export default function Home() {
           
           <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <button
-              onClick={loadRecentTransactions}
+              onClick={() => {
+                console.log('Recent Transactions button clicked');
+                loadRecentTransactions();
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl transition-colors"
             >
               <TrendingUp className="w-4 h-4" />
