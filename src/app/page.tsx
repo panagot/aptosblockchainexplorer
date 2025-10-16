@@ -241,13 +241,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-center">
         <Image
                   src="/aptos-logo.png"
                   alt="Aptos Logo"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8"
                 />
               </div>
               <div>
