@@ -1,103 +1,379 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Search, Loader2, Moon, Sun, History, TrendingUp, Copy, Download, Share2, ExternalLink, XCircle } from 'lucide-react';
+import { fetchTransactionDetails, fetchRecentTransactions } from '@/lib/aptosClient';
+import { parseAptosTransaction } from '@/lib/transactionParser';
+import type { AptosTransactionExplanation } from '@/types/transaction';
+import BalanceChanges from '@/components/BalanceChanges';
+import EducationalContent from '@/components/EducationalContent';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [hash, setHash] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [transaction, setTransaction] = useState<AptosTransactionExplanation | null>(null);
+  const [history, setHistory] = useState<AptosTransactionExplanation[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    // Check if we're in the browser
+    if (typeof window !== 'undefined') {
+      const savedHistory = localStorage.getItem('aptos-tx-history');
+      if (savedHistory) {
+        try {
+          setHistory(JSON.parse(savedHistory));
+        } catch (e) {
+          console.error('Failed to load history:', e);
+        }
+      }
+
+      const savedDarkMode = localStorage.getItem('aptos-dark-mode');
+      if (savedDarkMode === 'true') {
+        setDarkMode(true);
+        document.documentElement.classList.add('dark');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Check if we're in the browser
+    if (typeof window !== 'undefined') {
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('aptos-dark-mode', 'true');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('aptos-dark-mode', 'false');
+      }
+    }
+  }, [darkMode]);
+
+  const handleSearch = async () => {
+    if (!hash.trim()) return;
+
+    setLoading(true);
+    setError('');
+    setTransaction(null);
+
+    try {
+      const txData = await fetchTransactionDetails(hash.trim());
+      const parsedTx = parseAptosTransaction(txData);
+      
+      setTransaction(parsedTx);
+      
+      // Add to history
+      const newHistory = [parsedTx, ...history.slice(0, 9)];
+      setHistory(newHistory);
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aptos-tx-history', JSON.stringify(newHistory));
+      }
+    } catch (err) {
+      setError('Transaction not found or invalid hash');
+      console.error('Search error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadRecentTransactions = async () => {
+    try {
+      await fetchRecentTransactions(10);
+    } catch (err) {
+      console.error('Failed to load recent transactions:', err);
+    }
+  };
+
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(type);
+      setTimeout(() => setCopied(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const exportToJSON = () => {
+    if (!transaction) return;
+    
+    const dataStr = JSON.stringify(transaction, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `aptos-transaction-${transaction.hash}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const shareTransaction = async () => {
+    if (!transaction) return;
+    
+    const shareData = {
+      title: 'Aptos Transaction Analysis',
+      text: `Check out this Aptos transaction: ${transaction.hash}`,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await copyToClipboard(shareData.url, 'share');
+      }
+    } catch (err) {
+      console.error('Failed to share:', err);
+    }
+  };
+
+  const openInExplorer = () => {
+    if (!transaction) return;
+    window.open(`https://explorer.aptoslabs.com/txn/${transaction.hash}`, '_blank');
+  };
+
+  const getTransactionTypeColor = (type: string) => {
+    switch (type) {
+      case 'SWAP': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'TRANSFER': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'STAKE': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'NFT': return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300';
+      case 'DEFI': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300';
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col">
+      {/* Header */}
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">A</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  Aptos Explorer
+                </h1>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  An Easy to Read Aptos Blockchain Explorer
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                title="Transaction History"
+              >
+                <History className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+              
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                title="Toggle Dark Mode"
+              >
+                {darkMode ? (
+                  <Sun className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                ) : (
+                  <Moon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </header>
+
+      <div className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+        {/* Search Section */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            Explore Aptos Transactions
+          </h2>
+          <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
+            Enter any Aptos transaction hash to get a detailed, easy-to-understand analysis with balance changes and educational insights.
+          </p>
+          
+          <div className="max-w-2xl mx-auto">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <input
+                  type="text"
+                  value={hash}
+                  onChange={(e) => setHash(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="Enter Aptos transaction hash..."
+                  className="w-full pl-12 pr-4 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+              <button
+                onClick={handleSearch}
+                disabled={loading || !hash.trim()}
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white font-semibold rounded-2xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:shadow-none"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Search className="w-5 h-5" />
+                )}
+                {loading ? 'Analyzing...' : 'Analyze'}
+              </button>
+            </div>
+          </div>
+          
+          <div className="mt-6 flex flex-wrap gap-3 justify-center">
+            <button
+              onClick={loadRecentTransactions}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl transition-colors"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Recent Transactions
+            </button>
+          </div>
+          
+          <div className="mt-6 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
+              <span className="text-slate-600 dark:text-slate-400 text-xs">
+                💡 <strong>Pro tip:</strong> Copy any transaction hash from <a href="https://explorer.aptoslabs.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-medium">Aptos Explorer</a>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="max-w-2xl mx-auto mb-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <p className="text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Results */}
+        {transaction && (
+          <div className="space-y-6">
+            {/* Professional Summary Card */}
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 p-8 relative overflow-hidden">
+              {/* Background Pattern */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full -translate-y-16 translate-x-16"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-start gap-6 mb-8">
+                  <div className="flex-shrink-0">
+                    {transaction.success ? (
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <span className="text-white text-2xl">✓</span>
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <span className="text-white text-2xl">✗</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-4 flex-wrap">
+                      <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+                        Transaction Analysis
+                      </h2>
+                      <span className={`px-4 py-2 rounded-xl text-sm font-semibold ${getTransactionTypeColor(transaction.transactionType)}`}>
+                        {transaction.transactionType.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
+                      {transaction.summary}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Professional Action Buttons */}
+                <div className="flex flex-wrap gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+                  <button
+                    onClick={() => copyToClipboard(transaction.hash, 'hash')}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl transition-all duration-200 font-medium"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {copied === 'hash' ? 'Copied!' : 'Copy Hash'}
+                  </button>
+                  <button
+                    onClick={exportToJSON}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-xl transition-all duration-200 font-medium"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export JSON
+                  </button>
+                  <button
+                    onClick={shareTransaction}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-xl transition-all duration-200 font-medium"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share
+                  </button>
+                  <button
+                    onClick={openInExplorer}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-xl transition-all duration-200 font-medium"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    View on Aptos Explorer
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Balance Changes */}
+            {transaction.balanceChanges && transaction.balanceChanges.length > 0 && (
+              <BalanceChanges balanceChanges={transaction.balanceChanges} />
+            )}
+
+            {/* Educational Content */}
+            {transaction.educationalContent && transaction.educationalContent.length > 0 && (
+              <EducationalContent educationalContent={transaction.educationalContent} />
+            )}
+
+            {/* Error Information */}
+            {transaction.error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-8">
+                <h3 className="text-xl font-bold text-red-900 dark:text-red-300 mb-4">
+                  Transaction Failed
+                </h3>
+                <div className="bg-red-100 dark:bg-red-900/30 rounded-lg p-4">
+                  <pre className="text-sm text-red-800 dark:text-red-200 whitespace-pre-wrap">
+                    {transaction.error}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+      {/* Compact Footer - Fixed to Bottom */}
+      <footer className="mt-auto bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 border-t border-slate-200 dark:border-slate-700">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="text-center">
+            <p className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-2">
+              Made with ❤️ for the Aptos community
+            </p>
+            <div className="flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-500">
+              <span>Open source</span>
+              <span>•</span>
+              <span>No registration required</span>
+              <span>•</span>
+              <span>Professional transaction analysis</span>
+            </div>
+          </div>
+        </div>
       </footer>
-    </div>
+    </main>
   );
 }
