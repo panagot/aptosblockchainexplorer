@@ -10,7 +10,20 @@ export function parseAptosTransaction(tx: unknown): AptosTransactionExplanation 
   const gasFee = (gasUsed * gasUnitPrice) / 1e8; // Convert to APT
   const version = t.version as number;
   const blockHeight = t.block_height as number;
-  const timestamp = t.timestamp ? parseInt(t.timestamp as string) * 1000 : undefined;
+  // Handle different timestamp formats from Aptos API
+  let timestamp: number | undefined;
+  if (t.timestamp) {
+    const timestampValue = t.timestamp as string;
+    // Check if it's already in milliseconds or seconds
+    const parsed = parseInt(timestampValue);
+    if (parsed > 1000000000000) {
+      // Already in milliseconds
+      timestamp = parsed;
+    } else {
+      // Convert from seconds to milliseconds
+      timestamp = parsed * 1000;
+    }
+  }
 
   // Debug logging
   console.log('Parsing Aptos transaction:', {
@@ -141,9 +154,13 @@ function parseTokenTransfers(tx: unknown): TokenTransfer[] {
         const parsedAmount = parseFloat(rawAmount) || 0;
         const convertedAmount = parsedAmount / Math.pow(10, tokenInfo.decimals);
         
+        // Try different field names for sender/receiver
+        const from = (eventData.sender as string) || (eventData.from as string) || 'unknown';
+        const to = (eventData.receiver as string) || (eventData.to as string) || 'unknown';
+        
         transfers.push({
-          from: (eventData.sender as string) || 'unknown',
-          to: (eventData.receiver as string) || 'unknown',
+          from: from,
+          to: to,
           amount: convertedAmount,
           tokenType,
           tokenName: tokenInfo.name,
@@ -203,30 +220,34 @@ function parseBalanceChanges(tx: unknown): BalanceChange[] {
       
       // Handle traditional coin transfers
       if (eventType.includes('::coin::CoinWithdrawn')) {
-        const account = eventData.sender as string;
-        const tokenType = eventType.split('::')[0] + '::' + eventType.split('::')[1] + '::' + eventType.split('::')[2];
-        const rawAmount = eventData.amount as string;
-        const parsedAmount = parseFloat(rawAmount) || 0;
-        const amount = parsedAmount / 1e8; // Convert to APT
-        
-        if (!balanceMap.has(account)) {
-          balanceMap.set(account, { pre: 0, post: 0, tokenType });
+        const account = (eventData.sender as string) || (eventData.from as string);
+        if (account) {
+          const tokenType = eventType.split('::')[0] + '::' + eventType.split('::')[1] + '::' + eventType.split('::')[2];
+          const rawAmount = eventData.amount as string;
+          const parsedAmount = parseFloat(rawAmount) || 0;
+          const amount = parsedAmount / 1e8; // Convert to APT
+          
+          if (!balanceMap.has(account)) {
+            balanceMap.set(account, { pre: 0, post: 0, tokenType });
+          }
+          const current = balanceMap.get(account)!;
+          current.pre += amount;
+          current.post = current.pre - amount;
         }
-        const current = balanceMap.get(account)!;
-        current.pre += amount;
-        current.post = current.pre - amount;
       } else if (eventType.includes('::coin::CoinDeposited')) {
-        const account = eventData.receiver as string;
-        const tokenType = eventType.split('::')[0] + '::' + eventType.split('::')[1] + '::' + eventType.split('::')[2];
-        const rawAmount = eventData.amount as string;
-        const parsedAmount = parseFloat(rawAmount) || 0;
-        const amount = parsedAmount / 1e8; // Convert to APT
-        
-        if (!balanceMap.has(account)) {
-          balanceMap.set(account, { pre: 0, post: 0, tokenType });
+        const account = (eventData.receiver as string) || (eventData.to as string);
+        if (account) {
+          const tokenType = eventType.split('::')[0] + '::' + eventType.split('::')[1] + '::' + eventType.split('::')[2];
+          const rawAmount = eventData.amount as string;
+          const parsedAmount = parseFloat(rawAmount) || 0;
+          const amount = parsedAmount / 1e8; // Convert to APT
+          
+          if (!balanceMap.has(account)) {
+            balanceMap.set(account, { pre: 0, post: 0, tokenType });
+          }
+          const current = balanceMap.get(account)!;
+          current.post += amount;
         }
-        const current = balanceMap.get(account)!;
-        current.post += amount;
       }
       
       // Handle fungible asset transfers (newer Aptos system)
