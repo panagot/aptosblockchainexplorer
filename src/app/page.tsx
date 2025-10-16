@@ -97,6 +97,26 @@ export default function Home() {
     }
   };
 
+  const loadFromHistory = async (txHash: string) => {
+    setHash(txHash);
+    setShowHistory(false);
+    setLoading(true);
+    setError('');
+    setTransaction(null);
+
+    try {
+      const txData = await fetchTransactionDetails(txHash);
+      const parsedTx = parseAptosTransaction(txData);
+      
+      setTransaction(parsedTx);
+    } catch (err) {
+      setError('Transaction not found or invalid hash');
+      console.error('Search error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const exportToJSON = () => {
     if (!transaction) return;
     
@@ -219,6 +239,51 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* History Panel */}
+      {showHistory && (
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Transaction History
+              </h3>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+            </div>
+            
+            {history.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {history.slice(0, 6).map((tx, index) => (
+                  <button
+                    key={index}
+                    onClick={() => loadFromHistory(tx.hash)}
+                    className="p-3 bg-slate-50/80 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors text-left"
+                  >
+                    <div className="font-mono text-xs text-slate-600 dark:text-slate-400 mb-1">
+                      {tx.hash.slice(0, 8)}...{tx.hash.slice(-8)}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {tx.transactionType}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-500">
+                      {tx.gasFee.toFixed(6)} APT
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                No transaction history yet. Analyze some transactions to build your history!
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
         {/* Search Section */}

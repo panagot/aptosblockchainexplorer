@@ -14,13 +14,20 @@ export function parseAptosTransaction(tx: unknown): AptosTransactionExplanation 
   let timestamp: number | undefined;
   if (t.timestamp) {
     const timestampValue = t.timestamp as string;
-    // Check if it's already in milliseconds or seconds
     const parsed = parseInt(timestampValue);
+    
+    // Debug the timestamp value
+    console.log('Timestamp debug:', { timestampValue, parsed, isMilliseconds: parsed > 1000000000000 });
+    
     if (parsed > 1000000000000) {
       // Already in milliseconds
       timestamp = parsed;
+    } else if (parsed > 1000000000) {
+      // Likely in seconds, convert to milliseconds
+      timestamp = parsed * 1000;
     } else {
-      // Convert from seconds to milliseconds
+      // Very small number, might be in a different format
+      // Try treating as seconds anyway
       timestamp = parsed * 1000;
     }
   }
