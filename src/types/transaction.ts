@@ -8,6 +8,7 @@ export interface AptosTransactionExplanation {
   gasFee: number; // in APT
   version: number;
   blockHeight?: number;
+  sender?: string;
   
   // Account changes
   accountChanges: AccountChange[];

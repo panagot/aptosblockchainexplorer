@@ -44,6 +44,9 @@ export function parseAptosTransaction(tx: unknown): AptosTransactionExplanation 
   
   // Generate educational content
   const educationalContent = generateEducationalContent(transactionType, functionCalls, tokenTransfers, balanceChanges);
+  
+  // Extract sender
+  const sender = t.sender as string;
 
   return {
     hash,
@@ -55,6 +58,7 @@ export function parseAptosTransaction(tx: unknown): AptosTransactionExplanation 
     gasFee,
     version,
     blockHeight,
+    sender,
     accountChanges,
     functionCalls,
     tokenTransfers,

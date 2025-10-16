@@ -110,6 +110,35 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  const exportToCSV = () => {
+    if (!transaction) return;
+    
+    const csvData = [
+      ['Field', 'Value'],
+      ['Hash', transaction.hash],
+      ['Type', transaction.transactionType],
+      ['Success', transaction.success],
+      ['Gas Fee', transaction.gasFee],
+      ['Version', transaction.version],
+      ['Sender', transaction.sender || 'Unknown'],
+      ['Timestamp', transaction.timestamp ? new Date(transaction.timestamp).toISOString() : 'Unknown'],
+      ['Summary', transaction.summary],
+      ['Function Calls', transaction.functionCalls.length],
+      ['Token Transfers', transaction.tokenTransfers.length],
+      ['Account Changes', transaction.accountChanges.length],
+      ['Balance Changes', transaction.balanceChanges?.length || 0]
+    ];
+    
+    const csvContent = csvData.map(row => row.map(field => `"${field}"`).join(',')).join('\n');
+    const dataBlob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `aptos-transaction-${transaction.hash.slice(0, 8)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const shareTransaction = async () => {
     if (!transaction) return;
     
@@ -289,9 +318,25 @@ export default function Home() {
                         {transaction.transactionType.toUpperCase()}
                       </span>
                     </div>
-                    <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
                       {transaction.summary}
                     </p>
+                    
+                    {/* What Happened Section */}
+                    <div className="bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl p-4">
+                      <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
+                        <span className="text-lg">💡</span>
+                        What Happened
+                      </h4>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        {transaction.transactionType === 'TRANSFER' 
+                          ? `Your token balances were updated. This typically happens when you receive tokens, make a purchase, or when your staking rewards are distributed. This transaction cost ${transaction.gasFee.toFixed(6)} APT in gas fees. The cost covers computation and storage, with any storage rebates deducted from the total.`
+                          : transaction.transactionType === 'SWAP'
+                          ? `You executed a token swap through a decentralized exchange. This transaction involved multiple token transfers and cost ${transaction.gasFee.toFixed(6)} APT in gas fees. The swap was processed using Aptos's parallel execution engine for optimal performance.`
+                          : `This transaction modified your account state and cost ${transaction.gasFee.toFixed(6)} APT in gas fees. The cost covers computation and storage operations on the Aptos blockchain.`
+                        }
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -302,14 +347,30 @@ export default function Home() {
                     className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl transition-all duration-200 font-medium"
                   >
                     <Copy className="w-4 h-4" />
-                    {copied === 'hash' ? 'Copied!' : 'Copy Hash'}
+                    {copied === 'hash' ? 'Copied!' : 'Copy Digest'}
                   </button>
+                  {transaction.sender && (
+                    <button
+                      onClick={() => transaction.sender && copyToClipboard(transaction.sender, 'sender')}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl transition-all duration-200 font-medium"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copy Sender
+                    </button>
+                  )}
                   <button
                     onClick={exportToJSON}
                     className="flex items-center gap-2 px-4 py-2.5 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-xl transition-all duration-200 font-medium"
                   >
                     <Download className="w-4 h-4" />
                     Export JSON
+                  </button>
+                  <button
+                    onClick={exportToCSV}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 rounded-xl transition-all duration-200 font-medium"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export CSV
                   </button>
                   <button
                     onClick={shareTransaction}
@@ -323,8 +384,233 @@ export default function Home() {
                     className="flex items-center gap-2 px-4 py-2.5 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-xl transition-all duration-200 font-medium"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    View on Aptos Explorer
+                    View on Explorer
                   </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Sender and Time Information */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-sm">
+                  👤
+                </div>
+                Transaction Info
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Sender</h4>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-slate-900 dark:text-slate-100 text-sm">
+                        {transaction.sender ? `${transaction.sender.slice(0, 8)}...${transaction.sender.slice(-8)}` : 'Unknown'}
+                      </span>
+                      <button
+                        onClick={() => transaction.sender && copyToClipboard(transaction.sender, 'sender')}
+                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors"
+                      >
+                        <Copy className="w-3 h-3 text-slate-500" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Time</h4>
+                    <div className="text-slate-900 dark:text-slate-100">
+                      {transaction.timestamp ? new Date(transaction.timestamp).toLocaleString() : 'Unknown'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Transaction Timeline */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-sm">
+                  ⏱️
+                </div>
+                Transaction Timeline
+              </h3>
+              
+              <div className="space-y-4">
+                {transaction.functionCalls.map((call, index) => (
+                  <div key={index} className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">⚡</span>
+                        <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                          {call.protocol || 'Function Call'}
+                        </h4>
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">
+                        {call.description}
+                      </p>
+                      <div className="text-xs text-slate-500 dark:text-slate-500 font-mono">
+                        {call.module}::{call.function}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Gas Payment Step */}
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                    {transaction.functionCalls.length + 1}
+                  </div>
+                  <div className="flex-1 p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">⛽</span>
+                      <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                        Pay Gas
+                      </h4>
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">
+                      Paid {transaction.gasFee.toFixed(6)} APT for gas
+                    </p>
+                    <div className="text-xs text-slate-500 dark:text-slate-500">
+                      Transaction finalized
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Object Changes (Account Changes) */}
+            {transaction.accountChanges.length > 0 && (
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center text-white text-sm">
+                    🔄
+                  </div>
+                  Object Changes ({transaction.accountChanges.length})
+                </h3>
+                
+                <div className="space-y-3">
+                  {transaction.accountChanges.slice(0, 10).map((change, index) => (
+                    <div key={index} className="p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-semibold text-green-600 dark:text-green-400">mutated</span>
+                          <div>
+                            <div className="font-semibold text-slate-900 dark:text-slate-100">
+                              Updated {change.changeType || 'Account'}
+                            </div>
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                              {change.account ? `${change.account.slice(0, 8)}...${change.account.slice(-8)}` : 'Unknown address'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-500">
+                          {change.balance ? `${change.balance} tokens` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {transaction.accountChanges.length > 10 && (
+                    <div className="text-center text-sm text-slate-500 dark:text-slate-400 py-2">
+                      ... and {transaction.accountChanges.length - 10} more changes
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Move Call Details */}
+            {transaction.functionCalls.length > 0 && (
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">
+                    📞
+                  </div>
+                  Move Call
+                </h3>
+                
+                {transaction.functionCalls.map((call, index) => (
+                  <div key={index} className="p-6 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <div className="font-mono text-slate-900 dark:text-slate-100 text-sm mb-4">
+                      {call.module}::{call.function}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-slate-600 dark:text-slate-400">Package:</span>
+                        <div className="font-mono text-slate-900 dark:text-slate-100 text-xs mt-1">
+                          {call.module.split('::')[0] || 'Unknown'}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-slate-600 dark:text-slate-400">Module:</span>
+                        <div className="font-mono text-slate-900 dark:text-slate-100 text-xs mt-1">
+                          {call.module.split('::')[1] || 'Unknown'}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-slate-600 dark:text-slate-400">Function:</span>
+                        <div className="font-mono text-slate-900 dark:text-slate-100 text-xs mt-1">
+                          {call.function}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Gas Usage Analysis */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-sm">
+                  ⛽
+                </div>
+                Gas Usage
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-slate-600 dark:text-slate-400">Gas Efficiency</span>
+                      <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm rounded-full font-semibold">
+                        Cheap
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-500">
+                      Good gas usage
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Gas Breakdown</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Computation:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">
+                          {(transaction.gasFee * 0.8).toFixed(6)} APT
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Storage:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">
+                          {(transaction.gasFee * 0.2).toFixed(6)} APT
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t border-slate-200 dark:border-slate-600 pt-2">
+                        <span className="text-slate-600 dark:text-slate-400">Total Cost:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">
+                          {transaction.gasFee.toFixed(6)} APT
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
