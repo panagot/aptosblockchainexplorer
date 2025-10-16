@@ -7,6 +7,16 @@ export function parseAptosTransaction(tx: unknown): AptosTransactionExplanation 
   const success = t.success as boolean;
   const gasUsed = (t.gas_used as number) || 0;
   const gasUnitPrice = (t.gas_unit_price as number) || 0;
+  
+  // Debug gas values
+  console.log('Gas debug:', { 
+    gasUsed, 
+    gasUnitPrice, 
+    rawGasUsed: t.gas_used, 
+    rawGasUnitPrice: t.gas_unit_price,
+    allKeys: Object.keys(t)
+  });
+  
   const gasFee = (gasUsed * gasUnitPrice) / 1e8; // Convert to APT
   const version = t.version as number;
   const blockHeight = t.block_height as number;
