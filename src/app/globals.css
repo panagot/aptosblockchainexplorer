@@ -151,3 +151,85 @@ html.dark .card {
 html.dark .glow {
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.1) !important;
 }
+
+/* Fix contrast issues for specific elements */
+html.dark .bg-slate-100 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-slate-200 {
+  background-color: rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+  color: #f8fafc !important;
+}
+
+/* Fix educational content contrast */
+html.dark .educational-content {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(51, 65, 85, 0.5) !important;
+}
+
+html.dark .educational-content p {
+  color: #e2e8f0 !important;
+}
+
+html.dark .educational-content li {
+  color: #e2e8f0 !important;
+}
+
+/* Fix transaction analysis labels */
+html.dark .transaction-label {
+  background-color: rgba(51, 65, 85, 0.9) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+}
+
+/* Fix any remaining low contrast text */
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-200 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-100 {
+  color: #f8fafc !important;
+}
+
+/* Additional contrast fixes for common problematic elements */
+html.dark .bg-gray-100 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-gray-50 {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-gray-200 {
+  background-color: rgba(51, 65, 85, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+/* Fix any light background elements that should be dark */
+html.dark [class*="bg-slate-1"],
+html.dark [class*="bg-gray-1"],
+html.dark [class*="bg-zinc-1"] {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #f8fafc !important;
+}
+
+/* Ensure all text in light backgrounds is readable */
+html.dark [class*="bg-slate-1"] *,
+html.dark [class*="bg-gray-1"] *,
+html.dark [class*="bg-zinc-1"] * {
+  color: #f8fafc !important;
+}
