@@ -1,30 +1,108 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Light mode (default) */
+html {
+  background-color: #ffffff;
+  color: #171717;
 }
 
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+/* Dark mode */
+html.dark {
+  background-color: #0a0a0a;
+  color: #ededed;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html.dark body {
+  background-color: #0a0a0a;
+  color: #ededed;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: #ffffff;
+  color: #171717;
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
 /* Ensure all elements inherit the theme colors */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Force dark mode styles for main elements */
+html.dark main {
+  background-color: #0a0a0a !important;
+  color: #ededed !important;
+}
+
+html.dark header {
+  background-color: #0a0a0a !important;
+  color: #ededed !important;
+}
+
+html.dark div {
+  background-color: transparent !important;
+}
+
+/* Override any conflicting styles with more specific selectors */
+html.dark .bg-white {
+  background-color: #0a0a0a !important;
+}
+
+html.dark .text-slate-900 {
+  color: #ededed !important;
+}
+
+html.dark .text-slate-700 {
+  color: #d1d5db !important;
+}
+
+html.dark .text-slate-600 {
+  color: #9ca3af !important;
+}
+
+html.dark .text-slate-500 {
+  color: #6b7280 !important;
+}
+
+html.dark .text-slate-400 {
+  color: #9ca3af !important;
+}
+
+html.dark .text-slate-300 {
+  color: #d1d5db !important;
+}
+
+/* Force dark mode on all text elements */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+html.dark p,
+html.dark span,
+html.dark div {
+  color: #ededed !important;
+}
+
+/* Force dark mode on input elements */
+html.dark input {
+  background-color: #1f2937 !important;
+  color: #ededed !important;
+  border-color: #374151 !important;
+}
+
+html.dark input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Force dark mode on buttons */
+html.dark button {
+  background-color: #1f2937 !important;
+  color: #ededed !important;
+  border-color: #374151 !important;
 }

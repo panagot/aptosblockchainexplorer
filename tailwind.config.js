@@ -7,12 +7,7 @@ module.exports = {
   ],
   darkMode: 'class', // Enable class-based dark mode
   theme: {
-    extend: {
-      colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-      },
-    },
+    extend: {},
   },
   plugins: [],
 }
