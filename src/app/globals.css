@@ -233,3 +233,107 @@ html.dark [class*="bg-gray-1"] *,
 html.dark [class*="bg-zinc-1"] * {
   color: #f8fafc !important;
 }
+
+/* Fix footer contrast issues */
+html.dark footer {
+  color: #f8fafc !important;
+}
+
+html.dark footer p,
+html.dark footer span,
+html.dark footer div {
+  color: #f8fafc !important;
+}
+
+html.dark footer a {
+  color: #60a5fa !important;
+}
+
+/* Fix "Learn About Aptos" section */
+html.dark .learn-about-aptos {
+  color: #f8fafc !important;
+}
+
+html.dark .learn-about-aptos h2,
+html.dark .learn-about-aptos h3 {
+  color: #f8fafc !important;
+}
+
+/* Fix any remaining text color issues */
+html.dark .text-gray-600 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-gray-700 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-gray-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-gray-900 {
+  color: #f8fafc !important;
+}
+
+/* Force all text to be readable in dark mode - more specific approach */
+html.dark p,
+html.dark span,
+html.dark div,
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #f8fafc !important;
+}
+
+/* Override specific problematic text colors */
+html.dark .text-slate-600 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+/* Additional fixes for educational content sections */
+html.dark .bg-slate-100 p,
+html.dark .bg-slate-100 li,
+html.dark .bg-slate-100 span,
+html.dark .bg-slate-100 div {
+  color: #0f172a !important;
+  background-color: transparent !important;
+}
+
+html.dark .bg-gray-100 p,
+html.dark .bg-gray-100 li,
+html.dark .bg-gray-100 span,
+html.dark .bg-gray-100 div {
+  color: #0f172a !important;
+  background-color: transparent !important;
+}
+
+/* Fix any light text on light backgrounds */
+html.dark [class*="bg-slate-1"] p,
+html.dark [class*="bg-slate-1"] li,
+html.dark [class*="bg-slate-1"] span,
+html.dark [class*="bg-slate-1"] div {
+  color: #0f172a !important;
+}
+
+html.dark [class*="bg-gray-1"] p,
+html.dark [class*="bg-gray-1"] li,
+html.dark [class*="bg-gray-1"] span,
+html.dark [class*="bg-gray-1"] div {
+  color: #0f172a !important;
+}
