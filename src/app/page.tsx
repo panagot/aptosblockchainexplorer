@@ -205,7 +205,7 @@ export default function Home() {
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
         <Image
-                  src="/aptos-logo.svg"
+                  src="/aptos-logo.png"
                   alt="Aptos Logo"
                   width={24}
                   height={24}
