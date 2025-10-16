@@ -45,13 +45,17 @@ export default function Home() {
   useEffect(() => {
     // Check if we're in the browser
     if (typeof window !== 'undefined') {
+      console.log('Dark mode effect triggered, darkMode:', darkMode);
       if (darkMode) {
         document.documentElement.classList.add('dark');
         localStorage.setItem('aptos-dark-mode', 'true');
+        console.log('Added dark class to document element');
       } else {
         document.documentElement.classList.remove('dark');
         localStorage.setItem('aptos-dark-mode', 'false');
+        console.log('Removed dark class from document element');
       }
+      console.log('Document classes:', document.documentElement.className);
     }
   }, [darkMode]);
 
