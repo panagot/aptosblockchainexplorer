@@ -207,7 +207,7 @@ export default function Home() {
     if (!transaction) return;
     
     const shareData = {
-      title: &apos;Aptos Transaction Analysis&apos;,
+      title: 'Aptos Transaction Analysis',
       text: `Check out this Aptos transaction: ${transaction.hash}`,
       url: window.location.href
     };

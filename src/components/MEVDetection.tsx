@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle, Shield, TrendingUp, Eye, Clock } from 'lucide-react';
+import { AlertTriangle, Shield, Eye, Clock } from 'lucide-react';
 import type { AptosTransactionExplanation } from '@/types/transaction';
 
 interface MEVDetectionProps {
@@ -32,7 +32,6 @@ export default function MEVDetection({ transaction }: MEVDetectionProps) {
       // Mock MEV analysis based on transaction characteristics
       const isSwap = transaction.transactionType === 'SWAP';
       const hasMultipleCalls = transaction.functionCalls.length > 1;
-      const hasTokenTransfers = transaction.tokenTransfers.length > 0;
       
       let mevAnalysis: MEVAnalysis;
       
@@ -208,7 +207,7 @@ export default function MEVDetection({ transaction }: MEVDetectionProps) {
               {analysis.mevType === 'sandwich' && (
                 <p>
                   This transaction may be part of a sandwich attack, where a trader places transactions before and after 
-                  a victim's transaction to profit from price slippage.
+                  a victim&apos;s transaction to profit from price slippage.
                 </p>
               )}
               {analysis.mevType === 'liquidation' && (
@@ -234,7 +233,7 @@ export default function MEVDetection({ transaction }: MEVDetectionProps) {
             <span className="font-semibold text-slate-900 dark:text-white">Aptos MEV Protection</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Aptos's parallel execution and Move language provide some protection against MEV attacks. 
+            Aptos&apos;s parallel execution and Move language provide some protection against MEV attacks. 
             The resource-oriented model and type safety help prevent common MEV exploits, 
             though sophisticated MEV strategies can still occur.
           </p>
