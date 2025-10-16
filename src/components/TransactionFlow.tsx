@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight, ArrowDown, Users, Zap, Coins, Shield } from 'lucide-react';
+import { ArrowRight, Users, Zap, Coins, Shield } from 'lucide-react';
 import type { AptosTransactionExplanation } from '@/types/transaction';
 
 interface TransactionFlowProps {
@@ -125,7 +125,7 @@ export default function TransactionFlow({ transaction }: TransactionFlowProps) {
           <span className="font-semibold text-slate-900 dark:text-white">Aptos Parallel Execution</span>
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Aptos processes transactions in parallel when they don't conflict, 
+          Aptos processes transactions in parallel when they don&apos;t conflict, 
           dramatically improving throughput compared to sequential blockchains. 
           This transaction was processed alongside others without conflicts.
         </p>

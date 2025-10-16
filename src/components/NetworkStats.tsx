@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TrendingUp, Activity, Users, Zap, Clock, DollarSign } from 'lucide-react';
+import { TrendingUp, Activity, Users, Zap, DollarSign } from 'lucide-react';
 
 interface NetworkStats {
   tps: number;

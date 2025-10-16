@@ -207,7 +207,7 @@ export default function Home() {
     if (!transaction) return;
     
     const shareData = {
-      title: 'Aptos Transaction Analysis',
+      title: &apos;Aptos Transaction Analysis&apos;,
       text: `Check out this Aptos transaction: ${transaction.hash}`,
       url: window.location.href
     };
@@ -491,7 +491,7 @@ export default function Home() {
                         {transaction.transactionType === 'TRANSFER' 
                           ? `Your token balances were updated. This typically happens when you receive tokens, make a purchase, or when your staking rewards are distributed. This transaction cost ${transaction.gasFee.toFixed(6)} APT in gas fees. The cost covers computation and storage, with any storage rebates deducted from the total.`
                           : transaction.transactionType === 'SWAP'
-                          ? `You executed a token swap through a decentralized exchange. This transaction involved multiple token transfers and cost ${transaction.gasFee.toFixed(6)} APT in gas fees. The swap was processed using Aptos's parallel execution engine for optimal performance.`
+                          ? `You executed a token swap through a decentralized exchange. This transaction involved multiple token transfers and cost ${transaction.gasFee.toFixed(6)} APT in gas fees. The swap was processed using Aptos&apos;s parallel execution engine for optimal performance.`
                           : `This transaction modified your account state and cost ${transaction.gasFee.toFixed(6)} APT in gas fees. The cost covers computation and storage operations on the Aptos blockchain.`
                         }
                       </p>
