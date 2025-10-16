@@ -329,6 +329,114 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Detailed Transaction Information */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-sm">
+                  📊
+                </div>
+                Transaction Details
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Basic Info</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Hash:</span>
+                        <span className="font-mono text-slate-900 dark:text-slate-100 text-xs">{transaction.hash.slice(0, 20)}...</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Status:</span>
+                        <span className={`font-semibold ${transaction.success ? 'text-green-600' : 'text-red-600'}`}>
+                          {transaction.success ? 'Success' : 'Failed'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Gas Fee:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{transaction.gasFee.toFixed(6)} APT</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Version:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{transaction.version.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50/80 dark:bg-slate-700/50 rounded-2xl">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Analysis</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Function Calls:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{transaction.functionCalls.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Token Transfers:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{transaction.tokenTransfers.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Account Changes:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{transaction.accountChanges.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Balance Changes:</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{transaction.balanceChanges?.length || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Function Calls Details */}
+              {transaction.functionCalls.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Function Calls</h4>
+                  <div className="space-y-2">
+                    {transaction.functionCalls.map((call, index) => (
+                      <div key={index} className="p-3 bg-slate-50/80 dark:bg-slate-700/50 rounded-xl">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-semibold text-slate-900 dark:text-slate-100">{call.module}::{call.function}</span>
+                            {call.protocol && (
+                              <span className="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full">
+                                {call.protocol}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{call.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Token Transfers Details */}
+              {transaction.tokenTransfers.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Token Transfers</h4>
+                  <div className="space-y-2">
+                    {transaction.tokenTransfers.map((transfer, index) => (
+                      <div key={index} className="p-3 bg-slate-50/80 dark:bg-slate-700/50 rounded-xl">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-semibold text-slate-900 dark:text-slate-100">{transfer.amount} {transfer.tokenSymbol}</span>
+                            <span className="ml-2 text-sm text-slate-600 dark:text-slate-400">({transfer.tokenName})</span>
+                          </div>
+                        </div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                          From: {transfer.from.slice(0, 8)}...{transfer.from.slice(-8)} → To: {transfer.to.slice(0, 8)}...{transfer.to.slice(-8)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Balance Changes */}
             {transaction.balanceChanges && transaction.balanceChanges.length > 0 && (
               <BalanceChanges balanceChanges={transaction.balanceChanges} />

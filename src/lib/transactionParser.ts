@@ -12,6 +12,15 @@ export function parseAptosTransaction(tx: unknown): AptosTransactionExplanation 
   const blockHeight = t.block_height as number;
   const timestamp = t.timestamp ? parseInt(t.timestamp as string) * 1000 : undefined;
 
+  // Debug logging
+  console.log('Parsing Aptos transaction:', {
+    hash,
+    success,
+    events: t.events,
+    payload: t.payload,
+    changes: t.changes
+  });
+
   // Parse account changes
   const accountChanges = parseAccountChanges(tx);
   
