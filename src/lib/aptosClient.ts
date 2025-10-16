@@ -25,6 +25,10 @@ export const PROTOCOL_MAPPINGS: { [key: string]: string } = {
   // Staking
   '0x1::delegation_pool': 'Delegation Pool',
   '0x1::stake': 'Stake',
+  
+  // Custom Tokens
+  'rKGEN': 'rKGEN Token',
+  '0xebebfeea655b30ae5d63e932dda7755b53dad71a32bbe7a8ec616a907f491611': 'rKGEN Protocol',
 };
 
 // Popular Aptos tokens
@@ -34,6 +38,7 @@ export const POPULAR_TOKENS: { [key: string]: { name: string; symbol: string; de
   '0x6f986d146e4a90b828d8c12c14b6f4e003fdff11a8eec6ce2c7e0b3a6add9f96::coin::T': { name: 'Tether USD', symbol: 'USDT', decimals: 6 },
   '0x881ac202b1f1e6ad4efcff7a1d0579411533f2502417a19211cfc49751ddb5f4::pancake_coin::PancakeCoin': { name: 'PancakeSwap Token', symbol: 'CAKE', decimals: 8 },
   '0x190d44266241744264b964a37b8f09863167a12d3e70cda39376cfb4e3561e12::liquidity_pool::LiquidityPool': { name: 'Liquidswap LP', symbol: 'LP', decimals: 8 },
+  'rKGEN Token': { name: 'rKGEN Token', symbol: 'rKGEN', decimals: 8 },
 };
 
 export function getProtocolName(address: string): string {
