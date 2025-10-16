@@ -501,7 +501,7 @@ export default function Home() {
                           <span className="text-sm font-semibold text-green-600 dark:text-green-400">mutated</span>
                           <div>
                             <div className="font-semibold text-slate-900 dark:text-slate-100">
-                              Updated {change.changeType || 'Account'}
+                              {change.description || `Updated ${change.changeType || 'Account'}`}
                             </div>
                             <div className="text-sm text-slate-600 dark:text-slate-400">
                               {change.account ? `${change.account.slice(0, 8)}...${change.account.slice(-8)}` : 'Unknown address'}

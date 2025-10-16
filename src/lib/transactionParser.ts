@@ -16,6 +16,8 @@ export function parseAptosTransaction(tx: unknown): AptosTransactionExplanation 
   console.log('Parsing Aptos transaction:', {
     hash,
     success,
+    timestamp: t.timestamp,
+    parsedTimestamp: timestamp,
     events: t.events,
     payload: t.payload,
     changes: t.changes
@@ -77,12 +79,18 @@ function parseAccountChanges(tx: unknown): AccountChange[] {
     const changesArray = t.changes as Array<Record<string, unknown>>;
     changesArray.forEach((change) => {
       if (change.type === 'write_resource' || change.type === 'write_table_item') {
+        const address = change.address as string;
+        const changeType = change.type === 'write_resource' ? 'modified' : 'modified';
+        const description = change.type === 'write_resource' 
+          ? `Updated account resources` 
+          : `Updated table data`;
+          
         changes.push({
-          account: change.address as string,
-          changeType: 'modified',
+          account: address,
+          changeType: changeType as 'created' | 'modified' | 'deleted',
           balance: 0, // Will be calculated separately
           sequenceNumber: change.sequence_number as number,
-          description: `Account ${change.address} was modified`
+          description: description
         });
       }
     });
@@ -129,10 +137,14 @@ function parseTokenTransfers(tx: unknown): TokenTransfer[] {
         const tokenType = eventType.split('::')[0] + '::' + eventType.split('::')[1] + '::' + eventType.split('::')[2];
         const tokenInfo = getTokenInfo(tokenType);
         
+        const rawAmount = eventData.amount as string;
+        const parsedAmount = parseFloat(rawAmount) || 0;
+        const convertedAmount = parsedAmount / Math.pow(10, tokenInfo.decimals);
+        
         transfers.push({
           from: (eventData.sender as string) || 'unknown',
           to: (eventData.receiver as string) || 'unknown',
-          amount: parseFloat(eventData.amount as string) / Math.pow(10, tokenInfo.decimals),
+          amount: convertedAmount,
           tokenType,
           tokenName: tokenInfo.name,
           tokenSymbol: tokenInfo.symbol,
@@ -157,10 +169,13 @@ function parseTokenTransfers(tx: unknown): TokenTransfer[] {
           tokenInfo = { name: 'rKGEN Token', symbol: 'rKGEN', decimals: 8 };
         }
         
+        const parsedAmount = parseFloat(amount) || 0;
+        const convertedAmount = parsedAmount / Math.pow(10, tokenInfo.decimals);
+        
         transfers.push({
           from: from || 'unknown',
           to: receiver || 'unknown',
-          amount: parseFloat(amount) / Math.pow(10, tokenInfo.decimals),
+          amount: convertedAmount,
           tokenType,
           tokenName: tokenInfo.name,
           tokenSymbol: tokenInfo.symbol,
@@ -190,7 +205,9 @@ function parseBalanceChanges(tx: unknown): BalanceChange[] {
       if (eventType.includes('::coin::CoinWithdrawn')) {
         const account = eventData.sender as string;
         const tokenType = eventType.split('::')[0] + '::' + eventType.split('::')[1] + '::' + eventType.split('::')[2];
-        const amount = parseFloat(eventData.amount as string) / 1e8; // Convert to APT
+        const rawAmount = eventData.amount as string;
+        const parsedAmount = parseFloat(rawAmount) || 0;
+        const amount = parsedAmount / 1e8; // Convert to APT
         
         if (!balanceMap.has(account)) {
           balanceMap.set(account, { pre: 0, post: 0, tokenType });
@@ -201,7 +218,9 @@ function parseBalanceChanges(tx: unknown): BalanceChange[] {
       } else if (eventType.includes('::coin::CoinDeposited')) {
         const account = eventData.receiver as string;
         const tokenType = eventType.split('::')[0] + '::' + eventType.split('::')[1] + '::' + eventType.split('::')[2];
-        const amount = parseFloat(eventData.amount as string) / 1e8; // Convert to APT
+        const rawAmount = eventData.amount as string;
+        const parsedAmount = parseFloat(rawAmount) || 0;
+        const amount = parsedAmount / 1e8; // Convert to APT
         
         if (!balanceMap.has(account)) {
           balanceMap.set(account, { pre: 0, post: 0, tokenType });
@@ -212,7 +231,7 @@ function parseBalanceChanges(tx: unknown): BalanceChange[] {
       
       // Handle fungible asset transfers (newer Aptos system)
       else if (eventType.includes('::Transfer') || eventType.includes('::Deposit')) {
-        const amount = parseFloat(eventData.amount as string);
+        const amount = parseFloat(eventData.amount as string) || 0;
         const from = eventData.from as string;
         const receiver = eventData.receiver as string;
         
